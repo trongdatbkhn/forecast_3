@@ -17,15 +17,20 @@ import CityView from "../components/CityView.vue";
 export default {
   name: "AddCity",
   props: ["cities", "edit"],
-  created() {
-    console.log(this.cities);
-  },
+  components: { CityView },
+
+  // computed: {
+  //   getUniqueCities() {
+  //     return this.cities
+  //       .map((x) => x.city)
+  //       .filter((v, i, s) => s.indexOf(v) === i);
+  //   },
+  // },
   methods: {
     addCity() {
       this.$emit("add-city");
     },
   },
-  components: { CityView },
 };
 </script>
 <style lang="scss" scoped>

@@ -83,6 +83,7 @@ export default {
           params: { city: this.city.city },
         });
       }
+      // this.$forceUpdate();
     },
   },
 };

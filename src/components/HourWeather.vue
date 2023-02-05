@@ -14,9 +14,7 @@ export default {
   name: "HourWeather",
   props: ["forecast"],
   components: { HourTemp },
-  beforeCreate() {
-    console.log(this.forecast);
-  },
+
   computed: {
     filterList() {
       return this.forecast.hourly.slice(0, 23);

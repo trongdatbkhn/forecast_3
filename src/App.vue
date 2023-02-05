@@ -2,15 +2,18 @@
   <div class="main">
     <div v-if="isLoading" class="loading"></div>
     <div class="app">
+      <nav v-if="$store.state.user">
+        <router-link to="/"></router-link>
+        <button @click="$store.dispatch('logout')">Logout</button>
+      </nav>
       <modal-view
         v-if="modalOpen"
         v-on:close-modal="toggleModal"
         :APIkey="APIkey"
         :cities="cities"
       />
-
       <navigation-bar
-        v-if="$store.state.user"
+        v-if="isUsersPathHome"
         v-on:add-city="toggleModal"
         v-on:edit-city="toggleEdit"
         :addCityActive="addCityActive"
@@ -40,6 +43,7 @@ import { db } from "./firebase/firebaseinit.js";
 import NavigationBar from "./components/NavigationBar.vue";
 import ModalView from "./components/ModalView.vue";
 import axios from "axios";
+// import { useRoute } from "vue-router";
 // import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -50,6 +54,7 @@ import {
   onSnapshot,
   setDoc,
 } from "firebase/firestore";
+
 export default {
   name: "App",
   components: { NavigationBar, ModalView },
@@ -66,65 +71,57 @@ export default {
       isLoading: true,
     };
   },
-
-  computed: async function () {
+  mounted() {
     const store = useStore();
     store.dispatch("fetchUser");
     return { user: store.state.user };
   },
-  created() {
-    this.getCurrentCity();
-    this.checkRoute();
-    console.log(this.$store.state);
-  },
-  mounted: async function () {
-    // On page load
-    let long;
-    let lat;
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        // Fetch weather
-        this.locationFound = true;
-        long = position.coords.longitude;
-        lat = position.coords.latitude;
-        try {
-          axios
-            .get(
-              `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&units=metric&APPID=${this.APIkey}`
-            )
-            .then(async (res) => {
-              console.log(res.data);
-              const locater = res.data;
-              const docRef = await setDoc(
-                doc(
-                  db,
-                  "userinformation",
-                  this.$store.state.user.uid,
-                  "cities",
-                  this.$store.state.user.uid
-                ),
-                {
-                  userId: this.$store.state.user.uid,
-                  city: locater.name,
-                  currentWeather: locater,
-                }
-              );
-              console.log("Document written with ID: ", docRef);
-            });
-        } catch (error) {
-          console.log(error);
-        }
-      }),
-        (error) => {
-          alert(error);
-          if (error.code == error.PERMISSION_DENIED) {
-            this.locationFound = false;
-          }
-        };
-    }
-  },
-
   methods: {
+    async getLocation() {
+      // On page load
+      let long;
+      let lat;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          // Fetch weather
+          this.locationFound = true;
+          long = position.coords.longitude;
+          lat = position.coords.latitude;
+          try {
+            axios
+              .get(
+                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&units=metric&APPID=${this.APIkey}`
+              )
+              .then(async (res) => {
+                const locater = res.data;
+                const docRef = await setDoc(
+                  doc(
+                    db,
+                    "userinformation",
+                    this.$store.state.user.uid,
+                    "cities",
+                    this.$store.state.user.uid
+                  ),
+                  {
+                    userId: this.$store.state.user.uid,
+                    city: locater.name,
+                    currentWeather: locater,
+                  }
+                );
+                console.log("Document written with ID: ", docRef);
+              });
+          } catch (error) {
+            console.log(error);
+          }
+        }),
+          (error) => {
+            alert(error);
+            if (error.code == error.PERMISSION_DENIED) {
+              this.locationFound = false;
+            }
+          };
+      }
+    },
     async getCurrentCity() {
       const q = query(
         collection(db, "userinformation", this.$store.state.user.uid, "cities")
@@ -145,7 +142,6 @@ export default {
                 `https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&units=metric&APPID=${this.APIkey}`
               );
               const data = response.data;
-              console.log(data);
 
               const updateWeather = doc(
                 db,
@@ -154,12 +150,14 @@ export default {
                 "cities",
                 document.doc.id
               );
+              console.log(data);
               await updateDoc(updateWeather, { currentWeather: data })
                 .then(() => {
+                  console.log("123ád");
                   this.cities.push(document.doc.data());
                 })
                 .then(() => {
-                  console.log(this.cities);
+                  console.log(this.cities[0]);
                 });
             } catch (error) {
               console.log(error);
@@ -177,18 +175,19 @@ export default {
             );
           }
         });
-        console.log(this.cities);
       });
+      console.log(this.cities.length);
+      console.log(this.cities[0].city);
     },
-    getCurrentWeather() {
-      axios
-        .get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=${this.APIkey}`
-        )
-        .then((res) => {
-          console.log(res.data);
-        });
-    },
+    // getCurrentWeather() {
+    //   axios
+    //     .get(
+    //       `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=${this.APIkey}`
+    //     )
+    //     .then((res) => {
+    //       console.log(res.data);
+    //     });
+    // },
     toggleModal() {
       this.modalOpen = !this.modalOpen;
     },
@@ -212,6 +211,24 @@ export default {
     resetDays() {
       this.isDay = false;
       this.isNight = false;
+    },
+  },
+  computed: {
+    // fetchUser() {
+    //   const store = useStore();
+    //   store.dispatch("fetchUser");
+    //   return { user: store.state.user };
+    // },
+    isUsersPathHome() {
+      return this.$route.path !== "/login";
+    },
+  },
+  watch: {
+    $route() {
+      this.getLocation();
+      this.getCurrentCity();
+      this.checkRoute();
+      console.log(this.$store.state.user);
     },
   },
 };

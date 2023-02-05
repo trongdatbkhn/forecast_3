@@ -24,7 +24,6 @@ const store = createStore({
   actions: {
     async login({ commit }, details) {
       const { email, password } = details;
-
       try {
         await signInWithEmailAndPassword(auth, email, password);
       } catch (error) {

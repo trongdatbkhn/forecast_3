@@ -31,9 +31,7 @@
 export default {
   name: "NavigationBar",
   props: ["addCityActive", "isDay", "isNight", "cities"],
-  created() {
-    console.log(this.addCityActive, this.isDay, this.cities, this.isNight);
-  },
+  
   methods: {
     addCity() {
       this.$emit("add-city");

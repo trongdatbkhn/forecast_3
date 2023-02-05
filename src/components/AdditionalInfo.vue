@@ -45,9 +45,6 @@
 export default {
   name: "AdditionalInfo",
   props: ["currentWeather"],
-  beforeCreate() {
-    console.log(this.currentWeather);
-  },
 };
 </script>
 

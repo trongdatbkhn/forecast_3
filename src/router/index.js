@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useRoute } from "vue-router";
 import AddCity from "../views/AddCity.vue";
 import WeatherView from "../views/WeatherView.vue";
 import LoginSignUp from "../views/LoginSignUp.vue";
@@ -24,8 +25,12 @@ const routes = [
     path: "/login",
     name: "LoginSignUp",
     component: LoginSignUp,
+    meta: {
+      requiresAuth: false,
+    },
   },
 ];
+const route = useRoute();
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
@@ -48,4 +53,5 @@ router.beforeEach((to, from, next) => {
 
   next();
 });
+export { route };
 export default router;

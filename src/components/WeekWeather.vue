@@ -15,7 +15,7 @@ export default {
   props: ["forecast"],
   components: { DailyForecast },
   beforeCreate() {
-    console.log(this.forecast);
+    // console.log(this.forecast);
   },
   computed: {
     filterList() {
