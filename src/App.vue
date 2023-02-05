@@ -2,10 +2,6 @@
   <div class="main">
     <div v-if="isLoading" class="loading"></div>
     <div class="app">
-      <nav v-if="$store.state.user">
-        <router-link to="/"></router-link>
-        <button @click="$store.dispatch('logout')">Logout</button>
-      </nav>
       <modal-view
         v-if="modalOpen"
         v-on:close-modal="toggleModal"
@@ -16,10 +12,11 @@
         v-if="isUsersPathHome"
         v-on:add-city="toggleModal"
         v-on:edit-city="toggleEdit"
+        :edit="edit"
+        :cities="cities"
         :addCityActive="addCityActive"
         :isDay="isDay"
         :isNight="isNight"
-        :cities="cities"
       />
       <router-view
         :isDay="isDay"
@@ -38,7 +35,7 @@
 
 <script>
 // import { store } from "./store/index.js";
-import { useStore } from "vuex";
+// import { useStore } from "vuex";
 import { db } from "./firebase/firebaseinit.js";
 import NavigationBar from "./components/NavigationBar.vue";
 import ModalView from "./components/ModalView.vue";
@@ -72,9 +69,15 @@ export default {
     };
   },
   mounted() {
-    const store = useStore();
-    store.dispatch("fetchUser");
-    return { user: store.state.user };
+    this.getLocation();
+    this.$watch("$route", () => {
+      this.checkRoute(), this.getCurrentCity();
+    });
+  },
+  computed: {
+    isUsersPathHome() {
+      return this.$route.path !== "/login";
+    },
   },
   methods: {
     async getLocation() {
@@ -123,6 +126,7 @@ export default {
       }
     },
     async getCurrentCity() {
+      this.cities = [];
       const q = query(
         collection(db, "userinformation", this.$store.state.user.uid, "cities")
       );
@@ -130,8 +134,11 @@ export default {
         if (snapshot.docs.length === 0) {
           this.isLoading = false;
         }
+        console.log(snapshot);
+
         snapshot.docChanges().forEach(async (document) => {
           const cityQuery = document.doc.data().city.replace(/\s+/g, "");
+          console.log(document.oldIndex);
 
           if (
             document.type === "added" &&
@@ -157,7 +164,8 @@ export default {
                   this.cities.push(document.doc.data());
                 })
                 .then(() => {
-                  console.log(this.cities[0]);
+                  this.test = this.cities;
+                  console.log(this.cities.length);
                 });
             } catch (error) {
               console.log(error);
@@ -173,11 +181,13 @@ export default {
             this.cities = this.cities.filter(
               (city) => city.city !== document.doc.data().city
             );
+          } else if (document.oldIndex === 0) {
+            this.cities = [];
+            this.edit = false;
           }
         });
       });
-      console.log(this.cities.length);
-      console.log(this.cities[0].city);
+      console.log(this.cities);
     },
     // getCurrentWeather() {
     //   axios
@@ -200,7 +210,7 @@ export default {
       } else {
         this.addCityActive = false;
       }
-      console.log(this.addCityActive);
+      // console.log(this.addCityActive);
     },
     dayTime() {
       this.isDay = !this.isDay;
@@ -211,24 +221,6 @@ export default {
     resetDays() {
       this.isDay = false;
       this.isNight = false;
-    },
-  },
-  computed: {
-    // fetchUser() {
-    //   const store = useStore();
-    //   store.dispatch("fetchUser");
-    //   return { user: store.state.user };
-    // },
-    isUsersPathHome() {
-      return this.$route.path !== "/login";
-    },
-  },
-  watch: {
-    $route() {
-      this.getLocation();
-      this.getCurrentCity();
-      this.checkRoute();
-      console.log(this.$store.state.user);
     },
   },
 };

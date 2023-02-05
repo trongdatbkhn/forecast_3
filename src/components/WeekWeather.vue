@@ -14,9 +14,7 @@ export default {
   name: "WeekWeather",
   props: ["forecast"],
   components: { DailyForecast },
-  beforeCreate() {
-    // console.log(this.forecast);
-  },
+
   computed: {
     filterList() {
       return this.forecast.daily.slice(1, 8);

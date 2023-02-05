@@ -6,7 +6,7 @@
     </div>
     <div class="grid">
       <div class="city-link" v-for="(city, index) in cities" :key="index">
-        <city-view :city="city" :edit="edit" />
+        <city-view :city="city" :edit="edit" :cities="cities" />
       </div>
     </div>
   </div>
@@ -18,14 +18,6 @@ export default {
   name: "AddCity",
   props: ["cities", "edit"],
   components: { CityView },
-
-  // computed: {
-  //   getUniqueCities() {
-  //     return this.cities
-  //       .map((x) => x.city)
-  //       .filter((v, i, s) => s.indexOf(v) === i);
-  //   },
-  // },
   methods: {
     addCity() {
       this.$emit("add-city");
@@ -66,12 +58,12 @@ button {
 
 .grid {
   display: grid;
-  padding-top: 67px;
+  padding-top: 70px;
   background: #4b87ad;
   width: 100%;
   min-height: 100vh;
   grid-auto-rows: 250px;
-  @media (min-width: 400px) {
+  @media (min-width: 440px) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
