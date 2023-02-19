@@ -2,6 +2,13 @@
   <div class="main">
     <div v-if="isLoading" class="loading"></div>
     <div class="app">
+      <my-popup
+        v-if="popupTriggers.timedTrigger && isUsersPathHome"
+        :TogglePopup="() => TogglePopup('timedTrigger')"
+        :cities="cities"
+        :APIkey="APIkey"
+      >
+      </my-popup>
       <modal-view
         v-if="modalOpen"
         v-on:close-modal="toggleModal"
@@ -39,6 +46,7 @@
 import { db } from "./firebase/firebaseinit.js";
 import NavigationBar from "./components/NavigationBar.vue";
 import ModalView from "./components/ModalView.vue";
+import MyPopup from "./components/MyPopup.vue";
 import axios from "axios";
 // import { useRoute } from "vue-router";
 // import { v4 as uuidv4 } from "uuid";
@@ -54,7 +62,7 @@ import {
 
 export default {
   name: "App",
-  components: { NavigationBar, ModalView },
+  components: { NavigationBar, ModalView, MyPopup },
   data() {
     return {
       //339d698f17ac0be62378718a872f23c1
@@ -66,6 +74,9 @@ export default {
       edit: null,
       addCityActive: null,
       isLoading: true,
+      popupTriggers: {
+        timedTrigger: true,
+      },
     };
   },
   mounted() {
@@ -157,14 +168,12 @@ export default {
                 "cities",
                 document.doc.id
               );
-              console.log(data);
+
               await updateDoc(updateWeather, { currentWeather: data })
                 .then(() => {
-                  console.log("123ád");
                   this.cities.push(document.doc.data());
                 })
                 .then(() => {
-                  this.test = this.cities;
                   console.log(this.cities.length);
                 });
             } catch (error) {
@@ -198,6 +207,9 @@ export default {
     //       console.log(res.data);
     //     });
     // },
+    TogglePopup() {
+      this.popupTriggers.timedTrigger = !this.popupTriggers.timedTrigger;
+    },
     toggleModal() {
       this.modalOpen = !this.modalOpen;
     },

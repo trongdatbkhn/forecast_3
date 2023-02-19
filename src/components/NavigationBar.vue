@@ -47,12 +47,13 @@ export default {
     };
   },
   created() {
-    console.log(this.cities.length);
     const store = useStore();
     store.dispatch("fetchUser");
     return { user: store.state.user };
   },
-
+  mounted() {
+    console.log(this.cities.length);
+  },
   methods: {
     addCity() {
       this.$emit("add-city");
@@ -61,10 +62,12 @@ export default {
       location.reload();
     },
     editCities() {
-      this.$refs.editCities.classList.toggle("edit-active");
-      this.$emit("edit-city");
-      // this.edit0 = this.edit;
-      // this.eCities = this.cities;
+      if (this.cities && this.cities.length > 0) {
+        this.$refs.editCities.classList.toggle("edit-active");
+        this.$emit("edit-city");
+      } else {
+        this.$refs.editCities.classList.remove("edit-active");
+      }
     },
   },
 };
